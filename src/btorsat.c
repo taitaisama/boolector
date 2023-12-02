@@ -18,6 +18,7 @@
 #include "btorcore.h"
 #include "sat/btorcadical.h"
 #include "sat/btorcms.h"
+#include "sat/btorcmsgen.h"
 #include "sat/btorlgl.h"
 #include "sat/btorminisat.h"
 #include "sat/btorpicosat.h"
@@ -27,7 +28,7 @@
 
 #if !defined(BTOR_USE_LINGELING) && !defined(BTOR_USE_PICOSAT)  \
     && !defined(BTOR_USE_MINISAT) && !defined(BTOR_USE_CADICAL) \
-    && !defined(BTOR_USE_CMS)
+    && !defined(BTOR_USE_CMS) && !defined(BTOR_USE_CMSGEN)
 #error "no SAT solver configured"
 #endif
 
@@ -99,10 +100,10 @@ inc_max_var (BtorSATMgr *smgr)
 }
 
 static inline void *
-init (BtorSATMgr *smgr)
+init (BtorSATMgr *smgr, uint32_t *seed)
 {
   assert (smgr->api.init);
-  return smgr->api.init (smgr);
+  return smgr->api.init (smgr, seed);
 }
 
 static inline void
@@ -312,6 +313,9 @@ btor_sat_enable_solver (BtorSATMgr *smgr)
 #ifdef BTOR_USE_CMS
     case BTOR_SAT_ENGINE_CMS: btor_sat_enable_cms (smgr); break;
 #endif
+#ifdef BTOR_USE_CMSGEN
+    case BTOR_SAT_ENGINE_CMSGEN: btor_sat_enable_cmsgen (smgr); break;
+#endif
     default: BTOR_ABORT (1, "no sat solver configured");
   }
 
@@ -337,7 +341,7 @@ init_flags (BtorSATMgr *smgr)
 }
 
 void
-btor_sat_init (BtorSATMgr *smgr)
+btor_sat_init (BtorSATMgr *smgr, uint32_t *seed)
 {
   assert (smgr != NULL);
   assert (!smgr->initialized);
@@ -345,7 +349,7 @@ btor_sat_init (BtorSATMgr *smgr)
 
   init_flags (smgr);
 
-  smgr->solver = init (smgr);
+  smgr->solver = init (smgr, seed);
   enable_verbosity (smgr, btor_opt_get (smgr->btor, BTOR_OPT_VERBOSITY));
 
   /* Set terminate callbacks if SAT solver supports it */
@@ -481,7 +485,7 @@ btor_sat_failed (BtorSATMgr *smgr, int32_t lit)
 /*------------------------------------------------------------------------*/
 
 static void *
-dimacs_printer_init (BtorSATMgr *smgr)
+dimacs_printer_init (BtorSATMgr *smgr, uint32_t *seed)
 {
   BtorCnfPrinter *printer = (BtorCnfPrinter *) smgr->solver;
   BtorSATMgr *wrapped_smgr = printer->smgr;
@@ -495,7 +499,7 @@ dimacs_printer_init (BtorSATMgr *smgr)
    * information is recorded correctly. */
   BTOR_MSG (smgr->btor->msg, 1, "initialized %s", wrapped_smgr->name);
   init_flags (wrapped_smgr);
-  wrapped_smgr->solver = wrapped_smgr->api.init (wrapped_smgr);
+  wrapped_smgr->solver = wrapped_smgr->api.init (wrapped_smgr, seed);
 
   return printer;
 }

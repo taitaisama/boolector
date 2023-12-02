@@ -26,6 +26,7 @@ const char *const g_btor_se_name[BTOR_SAT_ENGINE_MAX + 1] = {
     [BTOR_SAT_ENGINE_MINISAT]   = "MiniSat",
     [BTOR_SAT_ENGINE_CADICAL]   = "CaDiCaL",
     [BTOR_SAT_ENGINE_CMS]       = "CryptoMiniSat",
+    [BTOR_SAT_ENGINE_CMSGEN]    = "CMSGen",
 };
 
 /*------------------------------------------------------------------------*/
@@ -324,6 +325,11 @@ btor_opt_init_opts (Btor *btor)
                 "cms",
                 BTOR_SAT_ENGINE_CMS,
                 "use cryptominisat as back end SAT solver");
+  add_opt_help (mm,
+                opts,
+                "cmsgen",
+                BTOR_SAT_ENGINE_CMSGEN,
+                "use cmsgen as back end SAT solver");
   add_opt_help (mm,
                 opts,
                 "lingeling",
@@ -1651,6 +1657,9 @@ btor_opt_set (Btor *btor, const BtorOption opt, uint32_t val)
 #endif
 #ifndef BTOR_USE_CMS
         || val == BTOR_SAT_ENGINE_CMS
+#endif
+#ifndef BTOR_USE_CMSGEN
+        || val == BTOR_SAT_ENGINE_CMSGEN
 #endif
     )
     {

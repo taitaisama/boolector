@@ -17,7 +17,7 @@
 #include "ccadical.h"
 
 static void *
-init (BtorSATMgr *smgr)
+init (BtorSATMgr *smgr, uint32_t *seed)
 {
   (void) smgr;
   CCaDiCaL *slv = ccadical_init ();

@@ -17,7 +17,7 @@
 #include "picosat.h"
 
 static void *
-init (BtorSATMgr *smgr)
+init (BtorSATMgr *smgr, uint32_t *seed)
 {
   PicoSAT *res;
 

@@ -70,6 +70,7 @@ set(libboolector_src_files
   preprocess/btorvarsubst.c
   sat/btorcadical.c
   sat/btorcms.cc
+  sat/btorcmsgen.cc
   sat/btorlgl.c
   sat/btorminisat.cc
   sat/btorpicosat.c
@@ -123,6 +124,11 @@ endif()
 if(CryptoMiniSat_FOUND)
   target_include_directories(boolector PRIVATE ${CryptoMiniSat_INCLUDE_DIR})
   target_link_libraries(boolector ${CryptoMiniSat_LIBRARIES})
+endif()
+
+if(CMSGen_FOUND)
+  target_include_directories(boolector PRIVATE ${CMSGen_INCLUDE_DIR})
+  target_link_libraries(boolector ${CMSGen_LIBRARIES})
 endif()
 
 if(PicoSAT_FOUND)

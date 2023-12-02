@@ -2724,14 +2724,14 @@ btormbt_state_opt (BtorMBT *mbt)
   {
     if (btoropt->val == BTOR_SAT_ENGINE_CADICAL)
       boolector_set_sat_solver (mbt->btor, "cadical");
-    if (btoropt->val == BTOR_SAT_ENGINE_CMS)
+    else if (btoropt->val == BTOR_SAT_ENGINE_CMS)
       boolector_set_sat_solver (mbt->btor, "cms");
     else if (btoropt->val == BTOR_SAT_ENGINE_LINGELING)
       boolector_set_sat_solver (mbt->btor, "lingeling");
     else if (btoropt->val == BTOR_SAT_ENGINE_MINISAT)
       boolector_set_sat_solver (mbt->btor, "minisat");
-    else if (btoropt->val == BTOR_SAT_ENGINE_CMS)
-      boolector_set_sat_solver (mbt->btor, "cryptominisat");
+    else if (btoropt->val == BTOR_SAT_ENGINE_CMSGEN)
+      boolector_set_sat_solver (mbt->btor, "cmsgen");
     else
       boolector_set_sat_solver (mbt->btor, "picosat");
   }
@@ -4042,7 +4042,7 @@ main (int32_t argc, char **argv)
       btoropt->val = val;
 #if !defined(BTOR_USE_LINGELING) && !defined(BTOR_USE_PICOSAT) \
     && !defined(BTOR_USE_MINISAT) && !defined(BTOR_USE_CMS)    \
-    && !defined(BTOR_USE_CADICAL)
+    && !defined(BTOR_USE_CADICAL) && !defined(BTOR_USE_CMSGEN)
       if (btoropt->kind == BTOR_OPT_INCREMENTAL)
       {
         btormbt_error ("no SAT solver with incremental support compiled in");

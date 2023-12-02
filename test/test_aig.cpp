@@ -131,7 +131,7 @@ TEST_F (TestAig, aig_to_sat)
   BtorAIG *and2    = btor_aig_and (amgr, var3, var4);
   BtorAIG *and3    = btor_aig_or (amgr, and1, and2);
   btor_sat_enable_solver (smgr);
-  btor_sat_init (smgr);
+  btor_sat_init (smgr, NULL);
   btor_aig_to_sat (amgr, and3);
   btor_sat_reset (smgr);
   btor_aig_release (amgr, var1);

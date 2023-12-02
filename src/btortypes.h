@@ -161,6 +161,8 @@ enum BtorOption
         `MiniSat <https://github.com/niklasso/minisat>`_
       * BTOR_SAT_ENGINE_PICOSAT:
         `PicoSAT <http://fmv.jku.at/picosat/>`_
+      * BTOR_SAT_ENGINE_CMSGEN:
+        `CMSGen <https://github.com/meelgroup/cmsgen>`_
   */
   BTOR_OPT_SAT_ENGINE,
 
@@ -877,6 +879,7 @@ enum BtorOptSatEngine
   BTOR_SAT_ENGINE_MINISAT,
   BTOR_SAT_ENGINE_CADICAL,
   BTOR_SAT_ENGINE_CMS,
+  BTOR_SAT_ENGINE_CMSGEN,
 };
 typedef enum BtorOptSatEngine BtorOptSatEngine;
 

@@ -6,9 +6,9 @@
  *  See COPYING for more information on using this software.
  */
 
-#ifdef BTOR_USE_CMS
+#ifdef BTOR_USE_CMSGEN
 
-#include "cryptominisat5/cryptominisat.h"
+#include "cmsgen/cmsgen.h"
 
 #include <algorithm>
 #include <cassert>
@@ -21,13 +21,13 @@ extern "C" {
 #include "btorabort.h"
 #include "btorsat.h"
 #include "btoropt.h"
-#include "sat/btorcms.h"
+#include "sat/btorcmsgen.h"
 
-using namespace CMSat;
+using namespace CMSGen;
 
 /*------------------------------------------------------------------------*/
 
-class BtorCMS : public SATSolver
+class BtorCMSGen : public SATSolver
 {
   uint32_t size;
   std::vector<Lit> assumptions, clause;
@@ -80,9 +80,9 @@ class BtorCMS : public SATSolver
   }
 
  public:
-  BtorCMS () : size (0), failed_map (0), assigned_map (0), nomodel (true) {}
+  BtorCMSGen () : size (0), failed_map (0), assigned_map (0), nomodel (true) {}
 
-  ~BtorCMS () { reset (); }
+  ~BtorCMSGen () { reset (); }
 
   int32_t inc ()
   {
@@ -158,16 +158,16 @@ init (BtorSATMgr* smgr, uint32_t* seed)
 {
   (void) smgr;
   uint32_t nthreads;
-  BtorCMS* res = new BtorCMS ();
-  if ((nthreads = btor_opt_get(smgr->btor, BTOR_OPT_SAT_ENGINE_N_THREADS)) > 1)
-    res->set_num_threads(nthreads);
+  BtorCMSGen* res = new BtorCMSGen ();
+  // if ((nthreads = btor_opt_get(smgr->btor, BTOR_OPT_SAT_ENGINE_N_THREADS)) > 1)
+  //   res->set_num_threads(nthreads);
   return res;
 }
 
 static void
 add (BtorSATMgr* smgr, int32_t lit)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   solver->add (lit);
 }
 
@@ -175,49 +175,49 @@ static int32_t
 sat (BtorSATMgr* smgr, int32_t limit)
 {
   (void) limit;
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   return solver->sat ();
 }
 
 static int32_t
 deref (BtorSATMgr* smgr, int32_t lit)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   return solver->deref (lit);
 }
 
 static void
 reset (BtorSATMgr* smgr)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   delete solver;
 }
 
 static int32_t
 inc_max_var (BtorSATMgr* smgr)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   return solver->inc ();
 }
 
 static void
 assume (BtorSATMgr* smgr, int32_t lit)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   solver->assume (lit);
 }
 
 static int32_t
 fixed (BtorSATMgr* smgr, int32_t lit)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   return solver->fixed (lit);
 }
 
 static int32_t
 failed (BtorSATMgr* smgr, int32_t lit)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   return solver->failed (lit);
 }
 
@@ -225,13 +225,13 @@ static void
 enable_verbosity (BtorSATMgr* smgr, int32_t level)
 {
   (void) smgr;
-  if (level >= 2) ((BtorCMS*) smgr->solver)->set_verbosity (level - 1);
+  if (level >= 2) ((BtorCMSGen*) smgr->solver)->set_verbosity (level - 1);
 }
 
 static void
 stats (BtorSATMgr* smgr)
 {
-  BtorCMS* solver = (BtorCMS*) smgr->solver;
+  BtorCMSGen* solver = (BtorCMSGen*) smgr->solver;
   printf (
       "[cms] calls %llu\n"
       "[cms] conflicts %llu\n"
@@ -247,14 +247,14 @@ stats (BtorSATMgr* smgr)
 /*------------------------------------------------------------------------*/
 
 bool
-btor_sat_enable_cms (BtorSATMgr* smgr)
+btor_sat_enable_cmsgen (BtorSATMgr* smgr)
 {
   assert (smgr != NULL);
 
   BTOR_ABORT (smgr->initialized,
-              "'btor_sat_init' called before 'btor_sat_enable_cms'");
+              "'btor_sat_init' called before 'btor_sat_enable_cmsgen'");
 
-  smgr->name = "CryptoMiniSat";
+  smgr->name = "CMSGen";
 
   BTOR_CLR (&smgr->api);
   smgr->api.add              = add;

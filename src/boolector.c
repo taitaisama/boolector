@@ -720,6 +720,9 @@ boolector_set_sat_solver (Btor *btor, const char *solver)
 #ifndef BTOR_USE_CMS
       || sat_engine == BTOR_SAT_ENGINE_CMS
 #endif
+#ifndef BTOR_USE_CMSGEN
+      || sat_engine == BTOR_SAT_ENGINE_CMSGEN
+#endif
   )
   {
     BTOR_WARN (true,
@@ -809,6 +812,9 @@ boolector_set_opt (Btor *btor, BtorOption opt, uint32_t val)
 #endif
 #ifndef BTOR_USE_CMS
         || val == BTOR_SAT_ENGINE_CMS
+#endif
+#ifndef BTOR_USE_CMSGEN
+        || val == BTOR_SAT_ENGINE_CMSGEN
 #endif
     )
     {
@@ -4953,6 +4959,11 @@ boolector_copyright (Btor *btor)
          "This software is linked against CryptoMiniSat\n"
          "Copyright (c) 2009-2020 Mate Soos\n"
 #endif
+#ifdef BTOR_USE_CMSGEN
+         "\n"
+         "This software is linked against CMSGen\n"
+         "Copyright (c) 2009-2020 Mate Soos\n"
+#endif
          "";
 }
 
@@ -4970,4 +4981,9 @@ boolector_git_id (Btor *btor)
   /* do not trace, not necessary */
   BTOR_ABORT_ARG_NULL (btor);
   return btor_git_id (btor);
+}
+
+void boolector_set_seed(Btor *btor, uint32_t seed) {
+  BTOR_ABORT_ARG_NULL (btor);
+  btor->seed = seed;
 }

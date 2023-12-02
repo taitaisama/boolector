@@ -34,7 +34,7 @@ TEST_F (TestSatMgr, new_delete) {}
 TEST_F (TestSatMgr, next_cnf_id)
 {
   btor_sat_enable_solver (d_smgr);
-  btor_sat_init (d_smgr);
+  btor_sat_init (d_smgr, NULL);
   ASSERT_EQ (btor_sat_mgr_next_cnf_id (d_smgr), 2);
   ASSERT_EQ (btor_sat_mgr_next_cnf_id (d_smgr), 3);
   ASSERT_EQ (btor_sat_mgr_next_cnf_id (d_smgr), 4);

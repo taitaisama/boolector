@@ -134,7 +134,7 @@ class BtorMiniSAT : public SimpSolver
 /*------------------------------------------------------------------------*/
 
 static void*
-init (BtorSATMgr* smgr)
+init (BtorSATMgr* smgr, uint32_t *seed)
 {
   (void) smgr;
   BtorMiniSAT* res = new BtorMiniSAT ();

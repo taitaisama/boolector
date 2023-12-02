@@ -63,7 +63,7 @@ typedef struct BtorOptHelp BtorOptHelp;
 /* enums for option values are defined in btortypes.h */
 
 #define BTOR_SAT_ENGINE_MIN BTOR_SAT_ENGINE_LINGELING
-#define BTOR_SAT_ENGINE_MAX BTOR_SAT_ENGINE_CMS
+#define BTOR_SAT_ENGINE_MAX BTOR_SAT_ENGINE_CMSGEN
 #ifdef BTOR_USE_CADICAL
 #define BTOR_SAT_ENGINE_DFLT BTOR_SAT_ENGINE_CADICAL
 #elif BTOR_USE_LINGELING
@@ -74,6 +74,8 @@ typedef struct BtorOptHelp BtorOptHelp;
 #define BTOR_SAT_ENGINE_DFLT BTOR_SAT_ENGINE_MINISAT
 #elif BTOR_USE_CMS
 #define BTOR_SAT_ENGINE_DFLT BTOR_SAT_ENGINE_CMS
+#elif BTOR_USE_CMSGEN
+#define BTOR_SAT_ENGINE_DFLT BTOR_SAT_ENGINE_CMSGEN
 #endif
 extern const char *const g_btor_se_name[BTOR_SAT_ENGINE_MAX + 1];
 

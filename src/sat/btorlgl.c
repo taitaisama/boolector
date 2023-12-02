@@ -32,7 +32,7 @@
 /*------------------------------------------------------------------------*/
 
 static void *
-init (BtorSATMgr *smgr)
+init (BtorSATMgr *smgr, uint32_t *seed)
 {
   BtorLGL *res;
 
