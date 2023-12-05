@@ -1,164 +1,217 @@
-/*  Boolector: Satisfiablity Modulo Theories (SMT) solver.
- *
- *  Copyright (C) 2007-2021 by the authors listed in the AUTHORS file.
- *
- *  This file is part of Boolector.
- *  See COPYING for more information on using this software.
- */
 
 #ifdef BTOR_USE_CMSGEN
 
-#include "cmsgen/cmsgen.h"
-
-#include <algorithm>
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-#include <vector>
+#include "sat/btorcmsgenintf.h"
 
 extern "C" {
 
 #include "btorabort.h"
 #include "btorsat.h"
+#include "btorcore.h"
 #include "btoropt.h"
+#include "btoraigvec.h"
 #include "sat/btorcmsgen.h"
 
 using namespace CMSGen;
 
 /*------------------------------------------------------------------------*/
 
-class BtorCMSGen : public SATSolver
+
+Lit BtorCMSGen::import (int32_t lit)
 {
-  uint32_t size;
-  std::vector<Lit> assumptions, clause;
-  signed char* failed_map;
-  int32_t* assigned_map;
-  bool nomodel;
+  assert (0 < abs (lit) && ((uint32_t) abs (lit)) <= nVars ());
+  return Lit (abs (lit) - 1, lit < 0);
+}
 
-  Lit import (int32_t lit)
-  {
-    assert (0 < abs (lit) && ((uint32_t) abs (lit)) <= nVars ());
-    return Lit (abs (lit) - 1, lit < 0);
-  }
+void BtorCMSGen::reset ()
+{
+  if (failed_map) delete[] failed_map, failed_map = 0;
+  if (assigned_map) delete[] assigned_map, assigned_map = 0;
+  size = 0;
+}
 
-  void reset ()
-  {
-    if (failed_map) delete[] failed_map, failed_map = 0;
-    if (assigned_map) delete[] assigned_map, assigned_map = 0;
-    size = 0;
-  }
-
-  void analyze_failed ()
-  {
-    uint32_t nvars = nVars ();
-    failed_map     = new signed char[nvars];
-    memset (failed_map, 0, nvars);
-    const std::vector<Lit>& conflict = get_conflict ();
-    for (size_t i = 0; i < conflict.size (); i++)
+void BtorCMSGen::analyze_failed ()
+{
+  uint32_t nvars = nVars ();
+  failed_map     = new signed char[nvars];
+  memset (failed_map, 0, nvars);
+  const std::vector<Lit>& conflict = get_conflict ();
+  for (size_t i = 0; i < conflict.size (); i++)
     {
       uint32_t v = conflict[i].var ();
       assert (v < nvars);
       failed_map[v] = 1;
     }
-  }
+}
 
-  void analyze_fixed ()
-  {
-    assert (!assigned_map);
-    assert (!size);
-    size         = nVars ();
-    assigned_map = new int32_t[size];
-    memset (assigned_map, 0, sizeof(int32_t) * size);
-    const std::vector<Lit> assigned_lits = get_zero_assigned_lits ();
-    for (size_t i = 0; i < assigned_lits.size (); i++)
+void BtorCMSGen::analyze_fixed ()
+{
+  assert (!assigned_map);
+  assert (!size);
+  size         = nVars ();
+  assigned_map = new int32_t[size];
+  memset (assigned_map, 0, sizeof(int32_t) * size);
+  const std::vector<Lit> assigned_lits = get_zero_assigned_lits ();
+  for (size_t i = 0; i < assigned_lits.size (); i++)
     {
       Lit l      = assigned_lits[i];
       uint32_t v = l.var ();
       assert (v < size);
       assigned_map[v] = l.sign () ? -1 : 1;
     }
-  }
+}
 
- public:
-  BtorCMSGen () : size (0), failed_map (0), assigned_map (0), nomodel (true) {}
+BtorCMSGen::BtorCMSGen (uint32_t* seed) : SATSolver(NULL, NULL, seed), size (0), failed_map (0), assigned_map (0), nomodel (true) {}
 
-  ~BtorCMSGen () { reset (); }
+BtorCMSGen::~BtorCMSGen () { reset (); }
 
-  int32_t inc ()
+int32_t BtorCMSGen::inc ()
+{
+  nomodel = true;
+  new_var ();
+  return nVars ();
+}
+
+void BtorCMSGen::assume (int32_t lit)
+{
+  nomodel = true;
+  assumptions.push_back (import (lit));
+}
+
+void BtorCMSGen::add (int32_t lit)
+{
+  nomodel = true;
+  if (lit)
+    clause.push_back (import (lit));
+  else
+    add_clause (clause), clause.clear ();
+}
+
+int32_t BtorCMSGen::sat ()
+{
+  calls++;
+  reset ();
+  lbool res = solve (&assumptions);
+  analyze_fixed ();
+  conflicts += get_last_conflicts ();
+  decisions += get_last_decisions ();
+  propagations += get_last_propagations ();
+  assumptions.clear ();
+  nomodel = res != l_True;
+  return res == l_Undef ? 0 : (res == l_True ? 10 : 20);
+}
+
+int32_t BtorCMSGen::failed (int32_t lit)
+{
+  if (!failed_map) analyze_failed ();
+  Lit l      = import (lit);
+  uint32_t v = l.var ();
+  assert (v < nVars ());
+  return failed_map[v];
+}
+
+int32_t BtorCMSGen::fixed (int32_t lit)
+{
+  Lit l      = import (lit);
+  uint32_t v = l.var ();
+  if (v >= size) return 0;
+  return l.sign () ? -assigned_map[v] : assigned_map[v];
+}
+
+int32_t BtorCMSGen::deref (int32_t lit)
+{
+  if (nomodel) return fixed (lit);
+  const std::vector<lbool>& model = get_model ();
+  Lit l                           = import (lit);
+  uint32_t v                      = l.var ();
+  assert (v < model.size ());
+  int32_t res = model[l.var ()] == l_True ? 1 : -1;
+  return l.sign () ? -res : res;
+}
+
+/*------------------------------------------------------------------------*/
+
+void BtorCMSGen::add_sampling_node (Btor *btor, BoolectorNode *node) {
+  
+  BtorNode *exp, *real_exp;
+  bool inv;
+  BtorAIGVec *av;
+  uint32_t i, j, width;
+  int32_t lit;
+  Lit l;
+  BtorAIG *aig;
+
+  sampling_nodes.push_back(std::vector<Lit>());
+  
+  exp = BTOR_IMPORT_BOOLECTOR_NODE (node);
+  exp = btor_node_get_simplified(btor, exp);
+  real_exp = btor_node_real_addr (exp);
+  av = real_exp->av;
+  width = av->width;
+  inv = btor_node_is_inverted (exp);
+  
+  for (i = 0, j = width - 1; i < width; i++, j--)
   {
-    nomodel = true;
-    new_var ();
-    return nVars ();
+    aig = av->aigs[j];
+    if (aig == BTOR_AIG_TRUE || aig == BTOR_AIG_FALSE) {
+      l = Lit(0, (BTOR_IS_INVERTED_AIG (aig) ^ inv));
+    }
+    else {
+      lit = BTOR_REAL_ADDR_AIG (aig)->cnf_id;
+      assert (lit > 0);
+      l = import (lit);
+      l ^= (BTOR_IS_INVERTED_AIG (aig) ^ inv);
+    }
+    
+    sampling_nodes[sampling_nodes.size()-1].push_back(l);
+    if (l.var())
+      sampling_vars.push_back(l.var());
+  }  
+}
+
+void BtorCMSGen::set_sampling () {
+  
+  set_sampling_vars(&sampling_vars);
+  
+}
+
+void BtorCMSGen::resample (bool only_sampling) {
+
+  assert(!nomodel);
+  solve(&assumptions, only_sampling);
+  
+}
+
+// assuming correct sizes for each variable in the vars vector
+void BtorCMSGen::get_assignments (std::vector<std::vector<bool>> &vars) {
+
+  const std::vector<lbool> &model = get_model();
+  
+  for (uint32_t i = 0; i < sampling_nodes.size(); i ++) {
+    for (uint32_t j = 0,  _j = sampling_nodes[i].size()-1;
+	 j < sampling_nodes[i].size(); j ++, _j--) {
+      
+      uint32_t var = sampling_nodes[i][j].var();
+      if (var) {
+	bool val = model[var] == l_True ? true : false;
+	vars[i][_j] = sampling_nodes[i][j].sign() ? !val : val;
+      }
+      else {
+	vars[i][_j] = sampling_nodes[i][j].sign();
+      }
+      
+    }
   }
-
-  void assume (int32_t lit)
-  {
-    nomodel = true;
-    assumptions.push_back (import (lit));
-  }
-
-  void add (int32_t lit)
-  {
-    nomodel = true;
-    if (lit)
-      clause.push_back (import (lit));
-    else
-      add_clause (clause), clause.clear ();
-  }
-
-  int32_t sat ()
-  {
-    calls++;
-    reset ();
-    lbool res = solve (&assumptions);
-    analyze_fixed ();
-    conflicts += get_last_conflicts ();
-    decisions += get_last_decisions ();
-    propagations += get_last_propagations ();
-    assumptions.clear ();
-    nomodel = res != l_True;
-    return res == l_Undef ? 0 : (res == l_True ? 10 : 20);
-  }
-
-  int32_t failed (int32_t lit)
-  {
-    if (!failed_map) analyze_failed ();
-    Lit l      = import (lit);
-    uint32_t v = l.var ();
-    assert (v < nVars ());
-    return failed_map[v];
-  }
-
-  int32_t fixed (int32_t lit)
-  {
-    Lit l      = import (lit);
-    uint32_t v = l.var ();
-    if (v >= size) return 0;
-    return l.sign () ? -assigned_map[v] : assigned_map[v];
-  }
-
-  int32_t deref (int32_t lit)
-  {
-    if (nomodel) return fixed (lit);
-    const std::vector<lbool>& model = get_model ();
-    Lit l                           = import (lit);
-    uint32_t v                      = l.var ();
-    assert (v < model.size ());
-    int32_t res = model[l.var ()] == l_True ? 1 : -1;
-    return l.sign () ? -res : res;
-  }
-
-  uint64_t calls, conflicts, decisions, propagations;
-};
-
+}
+  
 /*------------------------------------------------------------------------*/
 
 static void*
 init (BtorSATMgr* smgr, uint32_t* seed)
 {
   (void) smgr;
-  uint32_t nthreads;
-  BtorCMSGen* res = new BtorCMSGen ();
+  // uint32_t nthreads;
+  BtorCMSGen* res = new BtorCMSGen (seed);
   // if ((nthreads = btor_opt_get(smgr->btor, BTOR_OPT_SAT_ENGINE_N_THREADS)) > 1)
   //   res->set_num_threads(nthreads);
   return res;
@@ -244,7 +297,7 @@ stats (BtorSATMgr* smgr)
   fflush (stdout);
 }
 
-/*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/  
 
 bool
 btor_sat_enable_cmsgen (BtorSATMgr* smgr)
@@ -273,5 +326,20 @@ btor_sat_enable_cmsgen (BtorSATMgr* smgr)
   smgr->api.stats            = stats;
   return true;
 }
+
+/*------------------------------------------------------------------------*/  
+
+BtorCMSGen *get_cmsgen_solver (Btor *btor) {
+  
+  BtorSATMgr* smgr;
+    
+  smgr = btor_get_sat_mgr (btor);
+  assert (smgr != NULL);
+  
+  return (BtorCMSGen*) smgr->solver;
+}
+
+
 };
+
 #endif
