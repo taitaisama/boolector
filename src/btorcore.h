@@ -90,8 +90,6 @@ struct Btor
   BtorSolver *slv;
   BtorCallbacks cbs;
 
-  uint32_t seed;
-
   BtorBVAssList *bv_assignments;
   BtorFunAssList *fun_assignments;
 

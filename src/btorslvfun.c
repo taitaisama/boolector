@@ -216,7 +216,7 @@ configure_sat_mgr (Btor *btor)
   smgr = btor_get_sat_mgr (btor);
   if (btor_sat_is_initialized (smgr)) return;
   btor_sat_enable_solver (smgr);
-  btor_sat_init (smgr, &(btor->seed));
+  btor_sat_init (smgr);
 
   /* reset SAT solver to non-incremental if all functions have been
    * eliminated */

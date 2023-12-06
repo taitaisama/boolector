@@ -61,7 +61,7 @@ struct BtorSATMgr
     int32_t (*failed) (BtorSATMgr *, int32_t);
     int32_t (*fixed) (BtorSATMgr *, int32_t);
     int32_t (*inc_max_var) (BtorSATMgr *);
-    void *(*init) (BtorSATMgr *, uint32_t *); /* required */
+    void *(*init) (BtorSATMgr *); /* required */
     void (*melt) (BtorSATMgr *, int32_t);
     int32_t (*repr) (BtorSATMgr *, int32_t);
     void (*reset) (BtorSATMgr *);           /* required */
@@ -122,7 +122,7 @@ int32_t btor_get_last_cnf_id_sat_mgr (BtorSATMgr * smgr);
 void btor_sat_enable_solver (BtorSATMgr *smgr);
 
 /* Inits the SAT solver. */
-void btor_sat_init (BtorSATMgr *smgr, uint32_t *seed);
+void btor_sat_init (BtorSATMgr *smgr);
 
 /* Returns if the SAT solver has already been initialized */
 bool btor_sat_is_initialized (BtorSATMgr *smgr);

@@ -4983,7 +4983,3 @@ boolector_git_id (Btor *btor)
   return btor_git_id (btor);
 }
 
-void boolector_set_seed(Btor *btor, uint32_t seed) {
-  BTOR_ABORT_ARG_NULL (btor);
-  btor->seed = seed;
-}

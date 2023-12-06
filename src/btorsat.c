@@ -100,10 +100,10 @@ inc_max_var (BtorSATMgr *smgr)
 }
 
 static inline void *
-init (BtorSATMgr *smgr, uint32_t *seed)
+init (BtorSATMgr *smgr)
 {
   assert (smgr->api.init);
-  return smgr->api.init (smgr, seed);
+  return smgr->api.init (smgr);
 }
 
 static inline void
@@ -341,7 +341,7 @@ init_flags (BtorSATMgr *smgr)
 }
 
 void
-btor_sat_init (BtorSATMgr *smgr, uint32_t *seed)
+btor_sat_init (BtorSATMgr *smgr)
 {
   assert (smgr != NULL);
   assert (!smgr->initialized);
@@ -349,7 +349,7 @@ btor_sat_init (BtorSATMgr *smgr, uint32_t *seed)
 
   init_flags (smgr);
 
-  smgr->solver = init (smgr, seed);
+  smgr->solver = init (smgr);
   enable_verbosity (smgr, btor_opt_get (smgr->btor, BTOR_OPT_VERBOSITY));
 
   /* Set terminate callbacks if SAT solver supports it */
@@ -485,7 +485,7 @@ btor_sat_failed (BtorSATMgr *smgr, int32_t lit)
 /*------------------------------------------------------------------------*/
 
 static void *
-dimacs_printer_init (BtorSATMgr *smgr, uint32_t *seed)
+dimacs_printer_init (BtorSATMgr *smgr)
 {
   BtorCnfPrinter *printer = (BtorCnfPrinter *) smgr->solver;
   BtorSATMgr *wrapped_smgr = printer->smgr;
@@ -499,7 +499,7 @@ dimacs_printer_init (BtorSATMgr *smgr, uint32_t *seed)
    * information is recorded correctly. */
   BTOR_MSG (smgr->btor->msg, 1, "initialized %s", wrapped_smgr->name);
   init_flags (wrapped_smgr);
-  wrapped_smgr->solver = wrapped_smgr->api.init (wrapped_smgr, seed);
+  wrapped_smgr->solver = wrapped_smgr->api.init (wrapped_smgr);
 
   return printer;
 }

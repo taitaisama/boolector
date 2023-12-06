@@ -2526,8 +2526,6 @@ const char *boolector_version (Btor *btor);
 */
 const char *boolector_git_id (Btor *btor);
 
-
-void boolector_set_seed(Btor *btor, uint32_t seed);
   
 /*------------------------------------------------------------------------*/
 #if __cplusplus
