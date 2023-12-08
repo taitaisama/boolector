@@ -10,7 +10,6 @@ extern "C" {
 #include "btorsat.h"
 #include "btorcore.h"
 #include "btoropt.h"
-#include "stdio.h"
 #include "btoraigvec.h"
 #include "sat/btorcmsgen.h"
   
@@ -75,9 +74,6 @@ void BtorCMSGen::set_sampling_lits (BoolectorNode *node)
   av = real_exp->av;
   width = av->width;
   inv = btor_node_is_inverted (exp);
-  
-  printf("size 2: %d\n", width);
-  fflush(stdin);
   
   for (i = 0; i < width; i++)
   {
