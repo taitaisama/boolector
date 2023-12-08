@@ -2,6 +2,7 @@
 #ifdef BTOR_USE_CMSGEN
 
 #include "sat/btorcmsgenintf.h"
+#include <algorithm>
 
 extern "C" {
   
@@ -9,6 +10,7 @@ extern "C" {
 #include "btorsat.h"
 #include "btorcore.h"
 #include "btoropt.h"
+#include "stdio.h"
 #include "btoraigvec.h"
 #include "sat/btorcmsgen.h"
   
@@ -18,18 +20,23 @@ class BtorCMSGen : public SATSolver {
 
   uint32_t size;
   std::vector<Lit> assumptions, clause;
+  std::vector<BoolectorNode*> sampling_nodes;
+  std::vector<std::vector<Lit>> sampling_lits;
   std::vector<uint32_t> sampl_vars;
   signed char* failed_map;
   int32_t* assigned_map;
   bool nomodel;
+  Btor* btor;
   
   Lit import (int32_t lit);
   void reset ();
   void analyze_failed ();
   void analyze_fixed ();
+  void set_sampl_vars();
+  void set_sampling_lits (BoolectorNode *node);
   
  public:
-  BtorCMSGen ();
+  BtorCMSGen (Btor* b);
   ~BtorCMSGen ();
   int32_t inc ();
   void assume (int32_t lit);
@@ -41,14 +48,74 @@ class BtorCMSGen : public SATSolver {
 
   uint64_t calls, conflicts, decisions, propagations;
 
-  friend void get_node_literals (Btor *btor, BoolectorNode *node, Lit *lits);
-  friend void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars);
-  friend void cmsgen_resample (Btor *btor, bool only_sampling);
-  
+  friend void set_sampling_node (Btor *btor, BoolectorNode *node);
+  // friend void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars);
+  friend void cmsgen_resample (Btor *btor);
+  friend uint64_t get_assignment (Btor *btor, uint32_t dom_idx);
 };
 
 /*------------------------------------------------------------------------*/
 
+void BtorCMSGen::set_sampling_lits (BoolectorNode *node)
+{
+  
+  BtorNode *exp, *real_exp;
+  bool inv;
+  BtorAIGVec *av;
+  uint32_t i, width;
+  int32_t lit;
+  Lit l;
+  BtorAIG *aig;
+  sampling_lits.push_back(std::vector<Lit>());
+  std::vector<Lit> &v = sampling_lits[sampling_lits.size()-1];
+  
+  exp = BTOR_IMPORT_BOOLECTOR_NODE (node);
+  exp = btor_node_get_simplified(btor, exp);
+  real_exp = btor_node_real_addr (exp);
+  av = real_exp->av;
+  width = av->width;
+  inv = btor_node_is_inverted (exp);
+  
+  printf("size 2: %d\n", width);
+  fflush(stdin);
+  
+  for (i = 0; i < width; i++)
+  {
+    aig = av->aigs[i];
+    if (aig == BTOR_AIG_TRUE || aig == BTOR_AIG_FALSE) {
+      l = Lit(0, (BTOR_IS_INVERTED_AIG (aig) ^ inv));
+    }
+    else {
+      lit = BTOR_REAL_ADDR_AIG (aig)->cnf_id;
+      assert (lit > 0);
+      sampl_vars.push_back(lit);
+      l = import (lit);
+      l ^= (BTOR_IS_INVERTED_AIG (aig) ^ inv);
+    }
+    v.push_back(l);
+  }  
+}
+
+void BtorCMSGen::set_sampl_vars()
+{
+
+  if (sampling_nodes.size() == 0)
+    return;
+  sampl_vars.clear();
+  for (BoolectorNode * node: sampling_nodes) {
+    set_sampling_lits(node);
+  }
+  std::sort(sampl_vars.begin(), sampl_vars.end());
+  std::vector<uint32_t> temp;
+  temp.push_back(sampl_vars[0]);
+  for (uint32_t i = 1; i < sampl_vars.size(); i ++) {
+    if (temp[temp.size()-1] != sampl_vars[i]) {
+      temp.push_back(sampl_vars[i]);
+    }
+  }
+  std::swap(sampl_vars, temp);
+  set_sampling_vars(&sampl_vars);
+}
 
 Lit BtorCMSGen::import (int32_t lit)
 {
@@ -94,7 +161,7 @@ void BtorCMSGen::analyze_fixed ()
     }
 }
 
-BtorCMSGen::BtorCMSGen () : size (0), failed_map (0), assigned_map (0), nomodel (true) {}
+BtorCMSGen::BtorCMSGen (Btor *b) : size (0), failed_map (0), assigned_map (0), nomodel (true), btor(b) {}
 
 BtorCMSGen::~BtorCMSGen () { reset (); }
 
@@ -124,7 +191,8 @@ int32_t BtorCMSGen::sat ()
 {
   calls++;
   reset ();
-  lbool res = solve (&assumptions);
+  set_sampl_vars();
+  lbool res = solve (&assumptions, (sampl_vars.size() > 0));
   analyze_fixed ();
   conflicts += get_last_conflicts ();
   decisions += get_last_decisions ();
@@ -171,23 +239,6 @@ int32_t BtorCMSGen::deref (int32_t lit)
 // }
 
 // assuming correct sizes for each variable in the vars vector
-// void BtorCMSGen::get_assignments (std::vector<std::vector<bool>> &vars) {
-
-//   const std::vector<lbool> &model = get_model();
-  
-//   for (uint32_t i = 0; i < sampling_nodes.size(); i ++) {
-//     for (uint32_t j = 0; j < sampling_nodes[i].size(); j ++) {
-//       uint32_t var = sampling_nodes[i][j].var();
-//       if (var) {
-// 	bool val = model[var] == l_True ? true : false;
-// 	vars[i][j] = sampling_nodes[i][j].sign() ? !val : val;
-//       }
-//       else {
-// 	vars[i][j] = sampling_nodes[i][j].sign();
-//       }      
-//     }
-//   }
-// }
   
 /*------------------------------------------------------------------------*/
 
@@ -196,7 +247,7 @@ init (BtorSATMgr* smgr)
 {
   (void) smgr;
   // uint32_t nthreads;
-  BtorCMSGen* res = new BtorCMSGen ();
+  BtorCMSGen* res = new BtorCMSGen (smgr->btor);
   // if ((nthreads = btor_opt_get(smgr->btor, BTOR_OPT_SAT_ENGINE_N_THREADS)) > 1)
   //   res->set_num_threads(nthreads);
   return res;
@@ -326,85 +377,80 @@ BtorCMSGen *get_cmsgen_solver (Btor *btor) {
   return (BtorCMSGen*) smgr->solver;
 }  
   
-void get_node_literals (Btor *btor, BoolectorNode *node, Lit *lits) {
-  
-  BtorNode *exp, *real_exp;
-  bool inv;
-  BtorAIGVec *av;
-  uint32_t i, width;
-  int32_t lit;
-  Lit l;
-  BtorAIG *aig;
-  BtorCMSGen* CMSGenSolver;
+void set_sampling_node (Btor *btor, BoolectorNode *node) {
 
-  CMSGenSolver = get_cmsgen_solver (btor);
-  
-  exp = BTOR_IMPORT_BOOLECTOR_NODE (node);
-  exp = btor_node_get_simplified(btor, exp);
-  real_exp = btor_node_real_addr (exp);
-  av = real_exp->av;
-  width = av->width;
-  inv = btor_node_is_inverted (exp);
-  
-  for (i = 0; i < width; i++)
-  {
-    aig = av->aigs[i];
-    if (aig == BTOR_AIG_TRUE || aig == BTOR_AIG_FALSE) {
-      l = Lit(0, (BTOR_IS_INVERTED_AIG (aig) ^ inv));
-    }
-    else {
-      lit = BTOR_REAL_ADDR_AIG (aig)->cnf_id;
-      assert (lit > 0);
-      l = CMSGenSolver->import (lit);
-      l ^= (BTOR_IS_INVERTED_AIG (aig) ^ inv);
-    }
+  BtorCMSGen* CMSGenSolver = get_cmsgen_solver (btor);
+  CMSGenSolver->sampling_nodes.push_back(node);  
 
-    lits[i] = l;
-  }  
 }
 
-void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars) {
+// void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars) {
 
-  BtorCMSGen* CMSGenSolver;
+//   BtorCMSGen* CMSGenSolver;
 
-  CMSGenSolver = get_cmsgen_solver (btor);
-  CMSGenSolver->sampl_vars = std::vector<uint32_t>(n_vars);
-  std::vector<uint32_t> &v = CMSGenSolver->sampl_vars;
+//   CMSGenSolver = get_cmsgen_solver (btor);
+//   CMSGenSolver->sampl_vars = std::vector<uint32_t>(n_vars);
+//   std::vector<uint32_t> &v = CMSGenSolver->sampl_vars;
   
-  for (uint32_t i = 0; i < n_vars; i ++) {
-    v[i] = vars[i];
-  }
-  CMSGenSolver->set_sampling_vars(&v);
+//   for (uint32_t i = 0; i < n_vars; i ++) {
+//     v[i] = vars[i];
+//   }
+//   CMSGenSolver->set_sampling_vars(&v);
   
-}
+// }
   
-void cmsgen_resample (Btor *btor, bool only_sampling) {
+void cmsgen_resample (Btor *btor) {
   
   BtorCMSGen* CMSGenSolver;
 
   CMSGenSolver = get_cmsgen_solver (btor);
-  CMSGenSolver->solve(&(CMSGenSolver->assumptions), only_sampling);
+  CMSGenSolver->solve(&(CMSGenSolver->assumptions), (CMSGenSolver->sampl_vars.size() > 0));
   
 }
 
-  
+// TODO
 void set_cmsgen_seed (Btor *btor, uint32_t *seed) {
   
-
   assert(false);
   
 }
 
-const lbool* get_cmsgen_model (Btor *btor) {
+uint64_t get_assignment (Btor *btor, uint32_t dom_idx) {
 
-  BtorCMSGen* CMSGenSolver;
-
-  CMSGenSolver = get_cmsgen_solver (btor);
-
+  BtorCMSGen* CMSGenSolver = get_cmsgen_solver (btor);
   const std::vector<lbool> &model = CMSGenSolver->get_model();
-  return &model[0];
+  assert(CMSGenSolver->sampling_nodes.size() > dom_idx);
+  std::vector<Lit> &v = CMSGenSolver->sampling_lits[dom_idx];
+  uint64_t ret = 0;
   
+  for (uint32_t i = 0, j = v.size()-1; i < v.size(); i ++, j--) {
+    uint32_t var = v[i].var();
+    bool val;
+    if (var) {
+      val = model[var] == l_True ? true : false;
+      val = v[i].sign() ? !val : val;
+    }
+    else {
+      val = v[i].sign();
+    }
+    if (val) {
+      ret |= (1 << j);
+    }
+  }
+  return ret;
 }
+
+
+// const lbool* get_cmsgen_model (Btor *btor) {
+
+//   BtorCMSGen* CMSGenSolver;
+
+//   CMSGenSolver = get_cmsgen_solver (btor);
+
+//   const std::vector<lbool> &model = CMSGenSolver->get_model();
+//   return &model[0];
+  
+// }
 
 };
 
