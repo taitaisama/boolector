@@ -385,7 +385,7 @@ void cmsgen_resample (Btor *btor) {
   
 }
 
-void configure_sat (btor *btor) {
+void configure_sat (Btor *btor) {
   
   BtorSATMgr *smgr;
   smgr = btor_get_sat_mgr (btor);
