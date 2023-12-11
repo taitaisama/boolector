@@ -35,7 +35,7 @@ class BtorCMSGen : public SATSolver {
   void set_sampling_lits (BoolectorNode *node);
   
  public:
-  BtorCMSGen (Btor* b);
+  BtorCMSGen (Btor *b, uint32_t *seed);
   ~BtorCMSGen ();
   int32_t inc ();
   void assume (int32_t lit);
@@ -163,7 +163,7 @@ void BtorCMSGen::analyze_fixed ()
     }
 }
 
-BtorCMSGen::BtorCMSGen (Btor *b) : size (0), failed_map (0), assigned_map (0), nomodel (true), btor(b) {}
+BtorCMSGen::BtorCMSGen (Btor *b, uint32_t *seed) : SATSolver(NULL, NULL, seed), size (0), failed_map (0), assigned_map (0), nomodel (true), btor(b) {}
 
 BtorCMSGen::~BtorCMSGen () { reset (); }
 
@@ -239,7 +239,8 @@ init (BtorSATMgr* smgr)
 {
   (void) smgr;
   // uint32_t nthreads;
-  BtorCMSGen* res = new BtorCMSGen (smgr->btor);
+  uint32_t seed = btor_opt_get (smgr->btor, BTOR_OPT_SEED);
+  BtorCMSGen* res = new BtorCMSGen (smgr->btor, &seed);
   // if ((nthreads = btor_opt_get(smgr->btor, BTOR_OPT_SAT_ENGINE_N_THREADS)) > 1)
   //   res->set_num_threads(nthreads);
   return res;
@@ -361,7 +362,7 @@ btor_sat_enable_cmsgen (BtorSATMgr* smgr)
 BtorCMSGen *get_cmsgen_solver (Btor *btor) {
   
   BtorSATMgr* smgr;
-    
+  
   smgr = btor_get_sat_mgr (btor);
   assert (smgr != NULL);
   assert (strcmp(smgr->name, "CMSGen") == 0);
@@ -392,13 +393,6 @@ void configure_sat (Btor *btor) {
   if (btor_sat_is_initialized (smgr)) return;
   btor_sat_enable_solver (smgr);
   btor_sat_init (smgr);
-  
-}
-
-// TODO
-void set_cmsgen_seed (Btor *btor, uint32_t *seed) {
-  
-  assert(false);
   
 }
 
