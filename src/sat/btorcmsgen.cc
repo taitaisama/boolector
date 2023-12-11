@@ -48,7 +48,6 @@ class BtorCMSGen : public SATSolver {
   uint64_t calls, conflicts, decisions, propagations;
 
   friend void set_sampling_node (Btor *btor, BoolectorNode *node);
-  // friend void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars);
   friend void cmsgen_resample (Btor *btor);
   friend uint64_t get_assignment (Btor *btor, uint32_t dom_idx);
 };
@@ -72,6 +71,10 @@ void BtorCMSGen::set_sampling_lits (BoolectorNode *node)
   exp = btor_node_get_simplified(btor, exp);
   real_exp = btor_node_real_addr (exp);
   av = real_exp->av;
+
+  // turn simplification off to avoid av == null
+  assert(av);
+  
   width = av->width;
   inv = btor_node_is_inverted (exp);
   
@@ -79,6 +82,7 @@ void BtorCMSGen::set_sampling_lits (BoolectorNode *node)
   {
     aig = av->aigs[i];
     if (aig == BTOR_AIG_TRUE || aig == BTOR_AIG_FALSE) {
+      // turn simplification off to avoid this case
       l = Lit(0, (BTOR_IS_INVERTED_AIG (aig) ^ inv));
     }
     else {
@@ -101,6 +105,8 @@ void BtorCMSGen::set_sampl_vars()
   for (BoolectorNode * node: sampling_nodes) {
     set_sampling_lits(node);
   }
+  if (sampl_vars.size() == 0)
+    return;
   std::sort(sampl_vars.begin(), sampl_vars.end());
   std::vector<uint32_t> temp;
   temp.push_back(sampl_vars[0]);
@@ -225,16 +231,6 @@ int32_t BtorCMSGen::deref (int32_t lit)
   int32_t res = model[l.var ()] == l_True ? 1 : -1;
   return l.sign () ? -res : res;
 }
-
-/*------------------------------------------------------------------------*/
-
-// void BtorCMSGen::set_sampling () {
-  
-//   set_sampling_vars(&sampling_vars);
-  
-// }
-
-// assuming correct sizes for each variable in the vars vector
   
 /*------------------------------------------------------------------------*/
 
@@ -380,27 +376,22 @@ void set_sampling_node (Btor *btor, BoolectorNode *node) {
 
 }
 
-// void set_cmsgen_sampling (Btor *btor, uint32_t *vars, uint32_t n_vars) {
-
-//   BtorCMSGen* CMSGenSolver;
-
-//   CMSGenSolver = get_cmsgen_solver (btor);
-//   CMSGenSolver->sampl_vars = std::vector<uint32_t>(n_vars);
-//   std::vector<uint32_t> &v = CMSGenSolver->sampl_vars;
-  
-//   for (uint32_t i = 0; i < n_vars; i ++) {
-//     v[i] = vars[i];
-//   }
-//   CMSGenSolver->set_sampling_vars(&v);
-  
-// }
-  
 void cmsgen_resample (Btor *btor) {
   
   BtorCMSGen* CMSGenSolver;
 
   CMSGenSolver = get_cmsgen_solver (btor);
   CMSGenSolver->solve(&(CMSGenSolver->assumptions), (CMSGenSolver->sampl_vars.size() > 0));
+  
+}
+
+void configure_sat (btor *btor) {
+  
+  BtorSATMgr *smgr;
+  smgr = btor_get_sat_mgr (btor);
+  if (btor_sat_is_initialized (smgr)) return;
+  btor_sat_enable_solver (smgr);
+  btor_sat_init (smgr);
   
 }
 
@@ -427,6 +418,7 @@ uint64_t get_assignment (Btor *btor, uint32_t dom_idx) {
       val = v[i].sign() ? !val : val;
     }
     else {
+      // turn off simplification to avoid this case
       val = v[i].sign();
     }
     if (val) {
@@ -435,18 +427,6 @@ uint64_t get_assignment (Btor *btor, uint32_t dom_idx) {
   }
   return ret;
 }
-
-
-// const lbool* get_cmsgen_model (Btor *btor) {
-
-//   BtorCMSGen* CMSGenSolver;
-
-//   CMSGenSolver = get_cmsgen_solver (btor);
-
-//   const std::vector<lbool> &model = CMSGenSolver->get_model();
-//   return &model[0];
-  
-// }
 
 };
 
