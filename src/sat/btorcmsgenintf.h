@@ -12,7 +12,7 @@ extern "C" {
   void cmsgen_resample (Btor *btor);
   void set_cmsgen_seed (Btor *btor, uint32_t *seed);
   uint64_t get_assignment (Btor *btor, uint32_t dom_idx);
-  void configure_sat (btor *btor);
+  void configure_sat (Btor *btor);
   
 }
 
