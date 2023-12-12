@@ -2,7 +2,6 @@
 #define BTORCMSGENINTF_H_INCLUDED
 
 #include "cmsgen/cmsgen.h"
-#include "cmsgen/solverconf.h"
 #include "boolector.h"
 
 extern "C" {
