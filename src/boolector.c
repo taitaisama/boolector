@@ -723,6 +723,9 @@ boolector_set_sat_solver (Btor *btor, const char *solver)
 #ifndef BTOR_USE_CMSGEN
       || sat_engine == BTOR_SAT_ENGINE_CMSGEN
 #endif
+#ifndef BTOR_USE_UNIGEN
+      || sat_engine == BTOR_SAT_ENGINE_UNIGEN
+#endif
   )
   {
     BTOR_WARN (true,
@@ -815,6 +818,9 @@ boolector_set_opt (Btor *btor, BtorOption opt, uint32_t val)
 #endif
 #ifndef BTOR_USE_CMSGEN
         || val == BTOR_SAT_ENGINE_CMSGEN
+#endif
+#ifndef BTOR_USE_UNIGEN
+        || val == BTOR_SAT_ENGINE_UNIGEN
 #endif
     )
     {
@@ -4962,6 +4968,11 @@ boolector_copyright (Btor *btor)
 #ifdef BTOR_USE_CMSGEN
          "\n"
          "This software is linked against CMSGen\n"
+         "Copyright (c) 2009-2020 Mate Soos\n"
+#endif
+#ifdef BTOR_USE_UNIGEN
+         "\n"
+         "This software is linked against UniGen\n"
          "Copyright (c) 2009-2020 Mate Soos\n"
 #endif
          "";

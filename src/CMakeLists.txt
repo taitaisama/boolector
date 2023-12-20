@@ -71,6 +71,8 @@ set(libboolector_src_files
   sat/btorcadical.c
   sat/btorcms.cc
   sat/btorcmsgen.cc
+  sat/btorunigen.cc
+  sat/btorgenintf.cc
   sat/btorlgl.c
   sat/btorminisat.cc
   sat/btorpicosat.c
@@ -129,6 +131,11 @@ endif()
 if(CMSGen_FOUND)
   target_include_directories(boolector PRIVATE ${CMSGen_INCLUDE_DIR})
   target_link_libraries(boolector ${CMSGen_LIBRARIES})
+endif()
+
+if(UniGen_FOUND)
+  target_include_directories(boolector PRIVATE ${UniGen_INCLUDE_DIR})
+  target_link_libraries(boolector ${UniGen_LIBRARIES})
 endif()
 
 if(PicoSAT_FOUND)

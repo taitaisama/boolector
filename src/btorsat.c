@@ -19,6 +19,7 @@
 #include "sat/btorcadical.h"
 #include "sat/btorcms.h"
 #include "sat/btorcmsgen.h"
+#include "sat/btorunigen.h"
 #include "sat/btorlgl.h"
 #include "sat/btorminisat.h"
 #include "sat/btorpicosat.h"
@@ -28,7 +29,8 @@
 
 #if !defined(BTOR_USE_LINGELING) && !defined(BTOR_USE_PICOSAT)  \
     && !defined(BTOR_USE_MINISAT) && !defined(BTOR_USE_CADICAL) \
-    && !defined(BTOR_USE_CMS) && !defined(BTOR_USE_CMSGEN)
+    && !defined(BTOR_USE_CMS) && !defined(BTOR_USE_CMSGEN)      \
+    && !defined(BTOR_USE_UNIGEN)
 #error "no SAT solver configured"
 #endif
 
@@ -315,6 +317,9 @@ btor_sat_enable_solver (BtorSATMgr *smgr)
 #endif
 #ifdef BTOR_USE_CMSGEN
     case BTOR_SAT_ENGINE_CMSGEN: btor_sat_enable_cmsgen (smgr); break;
+#endif
+#ifdef BTOR_USE_UNIGEN
+    case BTOR_SAT_ENGINE_UNIGEN: btor_sat_enable_unigen (smgr); break;
 #endif
     default: BTOR_ABORT (1, "no sat solver configured");
   }

@@ -163,6 +163,8 @@ enum BtorOption
         `PicoSAT <http://fmv.jku.at/picosat/>`_
       * BTOR_SAT_ENGINE_CMSGEN:
         `CMSGen <https://github.com/meelgroup/cmsgen>`_
+      * BTOR_SAT_ENGINE_UNIGEN:
+        `CMSGen <https://github.com/meelgroup/unigen>`_
   */
   BTOR_OPT_SAT_ENGINE,
 
@@ -880,6 +882,7 @@ enum BtorOptSatEngine
   BTOR_SAT_ENGINE_CADICAL,
   BTOR_SAT_ENGINE_CMS,
   BTOR_SAT_ENGINE_CMSGEN,
+  BTOR_SAT_ENGINE_UNIGEN,
 };
 typedef enum BtorOptSatEngine BtorOptSatEngine;
 

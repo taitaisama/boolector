@@ -1,15 +1,13 @@
-#ifndef BTORCMSGEN_H_INCLUDED
-#define BTORCMSGEN_H_INCLUDED
+#ifndef BTORUNIGEN_H_INCLUDED
+#define BTORUNIGEN_H_INCLUDED
 
 /*------------------------------------------------------------------------*/
-#ifdef BTOR_USE_CMSGEN
+#ifdef BTOR_USE_UNIGEN
 /*------------------------------------------------------------------------*/
 
 #include "btorsat.h"
 
-
-bool btor_sat_enable_cmsgen (BtorSATMgr* smgr);
- 
+bool btor_sat_enable_unigen (BtorSATMgr* smgr);
 
 /*------------------------------------------------------------------------*/
 #endif
