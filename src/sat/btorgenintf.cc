@@ -110,9 +110,7 @@ BtorGenIntf *get_gen_solver (Btor *btor) {
   else if (strcmp(smgr->name, "UniGen") == 0){
     return (BtorGenIntf*) ((BtorUniGen*) smgr->solver);
   }
-  else {
-    assert(false);
-  }
+  assert(false);
   
 }  
   

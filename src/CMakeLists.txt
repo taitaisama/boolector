@@ -134,8 +134,8 @@ if(CMSGen_FOUND)
 endif()
 
 if(UniGen_FOUND)
-  target_include_directories(boolector PRIVATE ${UniGen_INCLUDE_DIR})
-  target_link_libraries(boolector ${UniGen_LIBRARIES})
+  target_include_directories(boolector PRIVATE ${UniGen_INCLUDE_DIR} ${ApproxMC_INCLUDE_DIR} ${Arjun_INCLUDE_DIR} ${CryptoMiniSat_INCLUDE_DIR})
+  target_link_libraries(boolector ${UniGen_LIBRARIES} ${ApproxMC_LIBRARIES} ${Arjun_LIBRARIES} ${CryptoMiniSat_LIBRARIES})
 endif()
 
 if(PicoSAT_FOUND)
