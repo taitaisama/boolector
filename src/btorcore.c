@@ -3064,14 +3064,14 @@ btor_check_sat (Btor *btor, int32_t lod_limit, int32_t sat_limit)
     btor_delete (uclone);
   }
 
-  if (chkmodel)
-  {
-    if (res == BTOR_RESULT_SAT && !btor_opt_get (btor, BTOR_OPT_UCOPT))
-    {
-      btor_check_model (chkmodel);
-    }
-    btor_check_model_delete (chkmodel);
-  }
+  /* if (chkmodel) */
+  /* { */
+  /*   if (res == BTOR_RESULT_SAT && !btor_opt_get (btor, BTOR_OPT_UCOPT)) */
+  /*   { */
+  /*     btor_check_model (chkmodel); */
+  /*   } */
+  /*   btor_check_model_delete (chkmodel); */
+  /* } */
 #endif
 
 #ifndef NDEBUG

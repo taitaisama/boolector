@@ -85,4 +85,5 @@ BtorSolver *btor_new_fun_solver (Btor *btor);
 // TODO (ma): this is just a fix for now, this should be moved elsewhere
 /* Evaluates expression and returns its value. */
 BtorBitVector *btor_eval_exp (Btor *btor, BtorNode *exp);
+
 #endif

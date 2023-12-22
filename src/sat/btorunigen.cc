@@ -92,11 +92,11 @@ const std::vector<bool>& BtorUniGen::get_gen_model() {
   
 }
 
-void BtorUniGen::multisample(uint32_t count, void(*cb)(void)) {
+void BtorUniGen::multisample(uint32_t count, void(*cb)(void*), void* data) {
 
   auto lambda_callback = [&](const std::vector<int>& s, void* btorunigen) {
     set_model(s, btorunigen);
-    cb();
+    cb(data);
   };
 
   unig->set_callback(lambda_callback, this);
@@ -136,15 +136,6 @@ sat (BtorSATMgr* smgr, int32_t limit)
   return 10;
 }
 
-static int32_t
-deref (BtorSATMgr* smgr, int32_t lit)
-{
-
-  assert(false);
-  // BtorUniGen* solver = (BtorUniGen*) smgr->solver;
-  // return solver->deref (lit);
-}
-
 static void
 reset (BtorSATMgr* smgr)
 {
@@ -157,37 +148,6 @@ inc_max_var (BtorSATMgr* smgr)
 {
   BtorUniGen* solver = (BtorUniGen*) smgr->solver;
   return solver->inc ();
-}
-
-static void
-assume (BtorSATMgr* smgr, int32_t lit)
-{
-  assert(false);
-  // BtorUniGen* solver = (BtorUniGen*) smgr->solver;
-  // solver->assume (lit);
-}
-
-static int32_t
-fixed (BtorSATMgr* smgr, int32_t lit)
-{
-  assert(false);
-  // BtorUniGen* solver = (BtorUniGen*) smgr->solver;
-  // return solver->fixed (lit);
-}
-
-static int32_t
-failed (BtorSATMgr* smgr, int32_t lit)
-{
-  assert(false);
-  // BtorUniGen* solver = (BtorUniGen*) smgr->solver;
-  // return solver->failed (lit);
-}
-
-static void
-enable_verbosity (BtorSATMgr* smgr, int32_t level)
-{
-  // (void) smgr;
-  // if (level >= 2) ((BtorUniGen*) smgr->solver)->set_verbosity (level - 1);
 }
 
 static void
@@ -216,11 +176,11 @@ btor_sat_enable_unigen (BtorSATMgr* smgr)
 
   BTOR_CLR (&smgr->api);
   smgr->api.add              = add;
-  smgr->api.assume           = assume;
-  smgr->api.deref            = deref;
-  smgr->api.enable_verbosity = enable_verbosity;
-  smgr->api.failed           = failed;
-  smgr->api.fixed            = fixed;
+  smgr->api.assume           = 0;
+  smgr->api.deref            = 0;
+  smgr->api.enable_verbosity = 0;
+  smgr->api.failed           = 0;
+  smgr->api.fixed            = 0;
   smgr->api.inc_max_var      = inc_max_var;
   smgr->api.init             = init;
   smgr->api.repr             = 0;

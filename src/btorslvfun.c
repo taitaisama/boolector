@@ -208,7 +208,7 @@ incremental_required (Btor *btor)
   return res;
 }
 
-static void
+void
 configure_sat_mgr (Btor *btor)
 {
   BtorSATMgr *smgr;

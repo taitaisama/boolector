@@ -100,6 +100,7 @@ int32_t BtorCMSGen::sat ()
   conflicts += get_last_conflicts ();
   decisions += get_last_decisions ();
   propagations += get_last_propagations ();
+  old_assumptions = assumptions;
   assumptions.clear ();
   nomodel = res != l_True;
   return res == l_Undef ? 0 : (res == l_True ? 10 : 20);
@@ -135,7 +136,7 @@ int32_t BtorCMSGen::deref (int32_t lit)
 
 void BtorCMSGen::resample() {
 
-  solve(&(assumptions), (sampl_vars.size() > 0));
+  solve(&(old_assumptions), (sampl_vars.size() > 0));
   const std::vector<lbool> &v =  get_model();
   for (int i = 0; i < v.size(); i ++) {
     model[i] = v[i] == l_True;
@@ -155,11 +156,11 @@ void BtorCMSGen::set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars) {
   
 }
 
-void BtorCMSGen::multisample(uint32_t count, void(*callback)(void)) {
+void BtorCMSGen::multisample(uint32_t count, void(*callback)(void*), void* data) {
 
   for (int i = 0; i < count; i ++) {
     resample();
-    callback();
+    callback(data);
   }
   
 }

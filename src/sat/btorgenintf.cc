@@ -128,20 +128,18 @@ void resample (Btor *btor) {
   
 }
 
-void multisample (Btor *btor, uint32_t count, void(*callback)(void)) {
+void multisample (Btor *btor, uint32_t count, void(*callback)(void*), void* data) {
 
   BtorGenIntf* GenSolver = get_gen_solver (btor);
-  GenSolver->multisample(count, callback);
+  GenSolver->multisample(count, callback, data);
   
 }
 
-void configure_sat (Btor *btor) {
+void configure_sat_mgr (Btor *btor);
   
-  BtorSATMgr *smgr;
-  smgr = btor_get_sat_mgr (btor);
-  if (btor_sat_is_initialized (smgr)) return;
-  btor_sat_enable_solver (smgr);
-  btor_sat_init (smgr);
+void configure_sat (Btor *btor) {
+
+  configure_sat_mgr(btor);
   
 }
 

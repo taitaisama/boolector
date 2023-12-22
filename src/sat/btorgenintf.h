@@ -12,12 +12,11 @@ extern "C" {
   
 #include "boolector.h"
 
-  
   void set_sampling_node (Btor *btor, BoolectorNode *node);
   void resample (Btor *btor);
   uint64_t get_assignment (Btor *btor, uint32_t dom_idx);
   void configure_sat (Btor *btor);
-  void multisample (Btor *btor, uint32_t count, void(*callback)(void));
+  void multisample (Btor *btor, uint32_t count, void(*callback)(void*), void* data);
   
 };
     
@@ -39,7 +38,7 @@ public:
   void set_sampling_lits (BoolectorNode *node);
     
   virtual void resample() = 0;
-  virtual void multisample(uint32_t count, void(*callback)(void)) = 0;
+  virtual void multisample(uint32_t count, void(*callback)(void*), void* data) = 0;
   virtual const std::vector<bool>& get_gen_model() = 0;
   virtual void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars) = 0;
 
@@ -51,7 +50,7 @@ public:
 class BtorCMSGen : public CMSGen::SATSolver, public BtorGenIntf {
 
   uint32_t size;
-  std::vector<CMSGen::Lit> assumptions, clause;
+  std::vector<CMSGen::Lit> assumptions, clause, old_assumptions;
   std::vector<bool> model;
   signed char* failed_map;
   int32_t* assigned_map;
@@ -66,7 +65,7 @@ public:
   ~BtorCMSGen ();
 
   void resample();
-  void multisample(uint32_t count, void(*callback)(void));
+  void multisample(uint32_t count, void(*callback)(void*), void* data);
   const std::vector<bool>& get_gen_model();
   void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
   
@@ -95,7 +94,7 @@ public:
   ~BtorUniGen ();
   
   void resample();
-  void multisample(uint32_t count, void(*cb)(void));
+  void multisample(uint32_t count, void(*callback)(void*), void* data);
   const std::vector<bool>& get_gen_model();
   void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
   
