@@ -1509,7 +1509,7 @@ boolector_max_signed (Btor *btor, BoolectorSort sort)
 }
 
 BoolectorNode *
-boolector_unsigned_int (Btor *btor, uint32_t u, BoolectorSort sort)
+boolector_unsigned_int (Btor *btor, uint64_t u, BoolectorSort sort)
 {
   BtorNode *res;
   BtorSortId s;
@@ -1530,7 +1530,7 @@ boolector_unsigned_int (Btor *btor, uint32_t u, BoolectorSort sort)
 }
 
 BoolectorNode *
-boolector_int (Btor *btor, int32_t i, BoolectorSort sort)
+boolector_int (Btor *btor, int64_t i, BoolectorSort sort)
 {
   BtorNode *res;
   BtorSortId s;

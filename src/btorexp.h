@@ -112,13 +112,13 @@ BtorNode *btor_exp_bv_max_signed (Btor *btor, BtorSortId sort);
  * Create a bit-vector constant representing the given signed integer.
  * The constant is obtained by either truncating bits or by signed extension.
  */
-BtorNode *btor_exp_bv_int (Btor *btor, int32_t i, BtorSortId sort);
+BtorNode *btor_exp_bv_int (Btor *btor, int64_t i, BtorSortId sort);
 
 /**
  * Create a bit-vector constant representing the given unsigned integer.
  * The constant is obtained by either truncating bits or by unsigned extension.
  */
-BtorNode *btor_exp_bv_unsigned (Btor *btor, uint32_t u, BtorSortId sort);
+BtorNode *btor_exp_bv_unsigned (Btor *btor, uint64_t u, BtorSortId sort);
 
 /*------------------------------------------------------------------------*/
 

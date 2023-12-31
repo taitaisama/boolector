@@ -799,7 +799,7 @@ BoolectorNode *boolector_max_signed (Btor *btor, BoolectorSort sort);
   :return: Bit-vector constant of sort ``sort``.
 */
 BoolectorNode *boolector_unsigned_int (Btor *btor,
-                                       uint32_t u,
+                                       uint64_t u,
                                        BoolectorSort sort);
 
 /*!
@@ -814,7 +814,7 @@ BoolectorNode *boolector_unsigned_int (Btor *btor,
   :param sort: Sort of constant.
   :return: Bit-vector constant of sort ``sort``.
 */
-BoolectorNode *boolector_int (Btor *btor, int32_t i, BoolectorSort sort);
+BoolectorNode *boolector_int (Btor *btor, int64_t i, BoolectorSort sort);
 
 /*------------------------------------------------------------------------*/
 
