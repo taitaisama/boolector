@@ -107,9 +107,9 @@ BtorGenIntf *get_gen_solver (Btor *btor) {
   if (strcmp(smgr->name, "CMSGen") == 0) {
     return (BtorGenIntf*) ((BtorCMSGen*) smgr->solver);
   }
-  else if (strcmp(smgr->name, "UniGen") == 0){
-    return (BtorGenIntf*) ((BtorUniGen*) smgr->solver);
-  }
+  // else if (strcmp(smgr->name, "UniGen") == 0){
+  //   return (BtorGenIntf*) ((BtorUniGen*) smgr->solver);
+  // }
   assert(false);
   
 }  

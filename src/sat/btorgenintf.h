@@ -4,8 +4,8 @@
 
 #include "cryptominisat5/solvertypesmini.h"
 #include <cmsgen/cmsgen.h>
-#include <unigen/unigen.h>
-#include <approxmc/approxmc.h>
+// #include <unigen/unigen.h>
+// #include <approxmc/approxmc.h>
 #include <vector>
 
 extern "C" {
@@ -80,29 +80,29 @@ public:
   uint64_t calls, conflicts, decisions, propagations;
 };
 
-class BtorUniGen : public BtorGenIntf {
+// class BtorUniGen : public BtorGenIntf {
 
-public:
+// public:
   
-  std::vector<CMSat::Lit> clause;
-  std::vector<bool> model;
-  ApproxMC::AppMC* appmc;
-  UniGen::UniG* unig;
-  ApproxMC::SolCount sol_count;
+//   std::vector<CMSat::Lit> clause;
+//   std::vector<bool> model;
+//   ApproxMC::AppMC* appmc;
+//   UniGen::UniG* unig;
+//   ApproxMC::SolCount sol_count;
   
-  BtorUniGen (Btor *b, uint32_t *seed);
-  ~BtorUniGen ();
+//   BtorUniGen (Btor *b, uint32_t *seed);
+//   ~BtorUniGen ();
   
-  void resample();
-  void multisample(uint32_t count, void(*callback)(void*), void* data);
-  const std::vector<bool>& get_gen_model();
-  void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
+//   void resample();
+//   void multisample(uint32_t count, void(*callback)(void*), void* data);
+//   const std::vector<bool>& get_gen_model();
+//   void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
   
-  int32_t inc ();
-  void add (int32_t lit);
-  void sat ();
+//   int32_t inc ();
+//   void add (int32_t lit);
+//   void sat ();
 
-  uint64_t calls;
-};
+//   uint64_t calls;
+// };
 
 #endif
