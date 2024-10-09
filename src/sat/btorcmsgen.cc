@@ -158,15 +158,6 @@ void BtorCMSGen::set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars) {
   set_sampling_vars(sampling_vars);
   
 }
-
-void BtorCMSGen::multisample(uint32_t count, void(*callback)(void*), void* data) {
-
-  for (int i = 0; i < count; i ++) {
-    resample();
-    callback(data);
-  }
-  
-}
   
 /*------------------------------------------------------------------------*/
 

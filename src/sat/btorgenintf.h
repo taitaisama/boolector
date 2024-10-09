@@ -4,8 +4,8 @@
 
 #include "cryptominisat5/solvertypesmini.h"
 #include <cmsgen/cmsgen.h>
-// #include <unigen/unigen.h>
-// #include <approxmc/approxmc.h>
+#include <unigen/unigen.h>
+#include <approxmc/approxmc.h>
 #include <vector>
 
 extern "C" {
@@ -16,7 +16,6 @@ extern "C" {
   void resample (Btor *btor);
   uint64_t get_assignment (Btor *btor, uint32_t dom_idx);
   void configure_sat (Btor *btor);
-  void multisample (Btor *btor, uint32_t count, void(*callback)(void*), void* data);
   
 };
     
@@ -38,7 +37,6 @@ public:
   void set_sampling_lits (BoolectorNode *node);
     
   virtual void resample() = 0;
-  virtual void multisample(uint32_t count, void(*callback)(void*), void* data) = 0;
   virtual const std::vector<bool>& get_gen_model() = 0;
   virtual void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars) = 0;
 
@@ -65,7 +63,6 @@ public:
   ~BtorCMSGen ();
 
   void resample();
-  void multisample(uint32_t count, void(*callback)(void*), void* data);
   const std::vector<bool>& get_gen_model();
   void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
   
@@ -80,29 +77,35 @@ public:
   uint64_t calls, conflicts, decisions, propagations;
 };
 
-// class BtorUniGen : public BtorGenIntf {
+class BtorUniGen : public BtorGenIntf {
 
-// public:
+  uint32_t size;
+  std::vector<CMSat::Lit> clause;
+  std::vector<bool> models;
+  std::vector<bool> model;
+  ApproxMC::AppMC* appmc;
+  ApproxMC::SolCount sol_count;
+  UniGen::UniG* unig;
+  uint32_t model_count;
+  uint32_t curr_model_idx;
   
-//   std::vector<CMSat::Lit> clause;
-//   std::vector<bool> model;
-//   ApproxMC::AppMC* appmc;
-//   UniGen::UniG* unig;
-//   ApproxMC::SolCount sol_count;
+public:
   
-//   BtorUniGen (Btor *b, uint32_t *seed);
-//   ~BtorUniGen ();
+  BtorUniGen (Btor *b, uint32_t *seed);
+  ~BtorUniGen ();
   
-//   void resample();
-//   void multisample(uint32_t count, void(*callback)(void*), void* data);
-//   const std::vector<bool>& get_gen_model();
-//   void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
+  void resample();
+  const std::vector<bool>& get_gen_model();
+  void set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars);
+  void set_sampling_count(uint32_t count);
   
-//   int32_t inc ();
-//   void add (int32_t lit);
-//   void sat ();
+  int32_t inc ();
+  void add (int32_t lit);
+  void sat ();
 
-//   uint64_t calls;
-// };
+  uint64_t calls;
+  
+  friend void set_model(const std::vector<int>& s, void* x);
+};
 
 #endif

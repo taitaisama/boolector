@@ -107,9 +107,9 @@ BtorGenIntf *get_gen_solver (Btor *btor) {
   if (strcmp(smgr->name, "CMSGen") == 0) {
     return (BtorGenIntf*) ((BtorCMSGen*) smgr->solver);
   }
-  // else if (strcmp(smgr->name, "UniGen") == 0){
-  //   return (BtorGenIntf*) ((BtorUniGen*) smgr->solver);
-  // }
+  else if (strcmp(smgr->name, "UniGen") == 0){
+    return (BtorGenIntf*) ((BtorUniGen*) smgr->solver);
+  }
   assert(false);
   
 }  
@@ -125,13 +125,6 @@ void resample (Btor *btor) {
 
   BtorGenIntf* GenSolver = get_gen_solver (btor);
   GenSolver->resample();
-  
-}
-
-void multisample (Btor *btor, uint32_t count, void(*callback)(void*), void* data) {
-
-  BtorGenIntf* GenSolver = get_gen_solver (btor);
-  GenSolver->multisample(count, callback, data);
   
 }
 

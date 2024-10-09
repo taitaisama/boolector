@@ -27,19 +27,20 @@ using namespace ApproxMC;
 void set_model(const std::vector<int>& s, void* x) {
 
   BtorUniGen* btorunigen = (BtorUniGen*) x;
-  
+
+  uint32_t start_idx = (btorunigen->curr_model_idx++) * btorunigen->size;
   for (auto u: s) {
     if (u < 0) {
-      btorunigen->model[-u+1] = false;
+      btorunigen->models[start_idx-u+1] = false;
     }
     else {
-      btorunigen->model[u-1] = true;
+      btorunigen->models[start_idx+u-1] = true;
     }
   }
   
 }
 
-BtorUniGen::BtorUniGen (Btor *b, uint32_t *seed) : BtorGenIntf(b) {
+BtorUniGen::BtorUniGen (Btor *b, uint32_t *seed) : BtorGenIntf(b), size(0), model_count(BTORUNIGEN_SAMPLE_COUNT) {
   appmc = new ApproxMC::AppMC;
   appmc->set_seed(*seed);
   unig = new UniG(appmc);
@@ -52,7 +53,8 @@ BtorUniGen::~BtorUniGen () {}
 int32_t BtorUniGen::inc ()
 {
   appmc->new_var ();
-  model.push_back(false);
+  size ++;
+  // model.push_back(false);
   return appmc->nVars ();
 }
 
@@ -82,29 +84,24 @@ void BtorUniGen::set_gen_sampling_vars(std::vector<uint32_t> *sampling_vars) {
   
 void BtorUniGen::resample() {
 
-  unig->sample(&sol_count, 1);
+  if (curr_model_idx == model_count) {
+    unig->sample(&sol_count, model_count);
+    curr_model_idx = 0;
+    return;
+  }
+  curr_model_idx ++;
   
 }
 
-const std::vector<bool>& BtorUniGen::get_gen_model() {
+const std::vector<bool>&  BtorUniGen::get_gen_model() {
 
+  model.resize(size);
+  for (uint32_t i = 0; i < size; i ++) {
+    model[i] = models[i + (curr_model_idx*size)];
+  }
   return model;
   
 }
-
-void BtorUniGen::multisample(uint32_t count, void(*cb)(void*), void* data) {
-
-  auto lambda_callback = [&](const std::vector<int>& s, void* btorunigen) {
-    set_model(s, btorunigen);
-    cb(data);
-  };
-
-  unig->set_callback(lambda_callback, this);
-  unig->sample(&sol_count, count);
-  
-}
-
-
   
 /*------------------------------------------------------------------------*/
 
